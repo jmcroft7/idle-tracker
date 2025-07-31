@@ -1,0 +1,10 @@
+:root {
+    --bg-primary: #F4F5F7;
+    --bg-secondary: #FFFFFF;
+    --bg-tertiary: #E8E9EB;
+    --border-color: #D1D5DB;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --accent-color: #2563EB; /* A strong blue */
+    --button-text-primary: #FFFFFF;
+}
