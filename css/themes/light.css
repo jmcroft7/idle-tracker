@@ -1,6 +1,8 @@
 :root {
     --bg-primary: #F4F5F7;
+    --bg-primary-rgb: 244, 245, 247;
     --bg-secondary: #FFFFFF;
+    --bg-secondary-rgb: 255, 255, 255;
     --bg-tertiary: #E8E9EB;
     --border-color: #D1D5DB;
     --text-primary: #1F2937;

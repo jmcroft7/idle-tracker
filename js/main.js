@@ -1,8 +1,9 @@
 import { gameState, saveData, loadData } from './state.js';
-import { applyTheme, buildPage, buildSidebar, showToast, skillIcons, updateSidebarLevel } from './ui.js';
-import { setupEventListeners, skillActionDetails, checkLevelUp } from './handlers.js';
+import { applyTheme, buildPage, buildSidebar, showToast } from './ui.js';
+import { setupEventListeners, checkLevelUp } from './handlers.js';
+import { SKILL_DATA } from './data.js';
 
-let lastActiveSkill = null; // Keep track of the last active skill to hide its progress ring
+let lastActiveSkill = null;
 
 /**
  * Processes the active action, calculating completions and updating the state.
@@ -10,36 +11,31 @@ let lastActiveSkill = null; // Keep track of the last active skill to hide its p
 export function processActiveAction() {
     if (!gameState.activeAction) return;
 
-    const { skillName, startTime } = gameState.activeAction;
-    const details = skillActionDetails[skillName];
+    const { skillName, actionName, startTime } = gameState.activeAction;
+    const action = SKILL_DATA[skillName].actions[actionName];
     const now = Date.now();
     const elapsedTime = now - startTime;
 
-    if (elapsedTime >= details.duration) {
-        const completions = Math.floor(elapsedTime / details.duration);
+    if (elapsedTime >= action.duration) {
+        const completions = Math.floor(elapsedTime / action.duration);
         if (completions === 0) return;
+        const xpGained = completions * action.xp;
 
-        const xpGained = completions * details.xp;
-
-        // Update state first
+        // Update state
         gameState.skills[skillName].xp += xpGained;
-        
-        // Update the specific stat for the action
-        const statName = details.statName;
-        if (gameState.stats[skillName] && gameState.stats[skillName][statName] !== undefined) {
-            gameState.stats[skillName][statName] += completions;
+        if (gameState.stats[skillName][action.statName] !== undefined) {
+            gameState.stats[skillName][action.statName] += completions;
         }
-
-        gameState.activeAction.startTime += completions * details.duration;
+        gameState.activeAction.startTime += completions * action.duration;
         saveData();
 
         // Handle UI updates and notifications
         const leveledUp = checkLevelUp(skillName);
-
         if (!leveledUp) {
-            const skillDisplayName = skillName.charAt(0).toUpperCase() + skillName.slice(1);
-            const message = `<span class="toast-xp">+${xpGained}</span> ${skillDisplayName} XP`;
-            showToast(message, skillIcons[skillName]);
+            const skillData = SKILL_DATA[skillName];
+            const fullMessage = `<span class="toast-xp">+${xpGained}</span> ${skillData.displayName} XP`;
+            const compactMessage = `<span class="toast-xp">+${xpGained}</span> XP`;
+            showToast({ type: 'skill', message: fullMessage, compactMessage, icon: skillData.icon });
         }
 
         const activePage = document.querySelector('.nav-item.active')?.dataset.page;
@@ -63,30 +59,27 @@ function gameTick() {
     
     const currentActiveSkill = gameState.activeAction ? gameState.activeAction.skillName : null;
 
-    // Hide the old progress ring if the action has stopped or changed
     if (lastActiveSkill && lastActiveSkill !== currentActiveSkill) {
         const lastNavItem = document.querySelector(`.nav-item[data-page="${lastActiveSkill}"]`);
         if (lastNavItem) lastNavItem.classList.remove('is-training');
     }
 
-    // This part only runs if an action is active, to update all progress visuals
     if (gameState.activeAction) {
-        const { skillName, startTime } = gameState.activeAction;
-        const details = skillActionDetails[skillName];
+        const { skillName, actionName, startTime } = gameState.activeAction;
+        const action = SKILL_DATA[skillName].actions[actionName];
         const now = Date.now();
         const elapsedTime = now - startTime;
-        const progressPercent = elapsedTime / details.duration;
+        const progressPercent = elapsedTime / action.duration;
         
-        // Update linear progress bar if on the correct page
         const activePage = document.querySelector('.nav-item.active')?.dataset.page;
         if (activePage === skillName) {
-            const progressBar = document.getElementById('progress-bar');
+            // **FIX**: Select the correct progress bar for the currently running action
+            const progressBar = document.getElementById(`progress-bar-${actionName}`);
             if (progressBar) {
                 progressBar.style.width = `${Math.min(progressPercent * 100, 100)}%`;
             }
         }
 
-        // Update circular progress bar in the sidebar
         const navItem = document.querySelector(`.nav-item[data-page="${skillName}"]`);
         if (navItem) {
             navItem.classList.add('is-training');
@@ -107,17 +100,14 @@ function gameTick() {
 function initializeApp() {
     loadData();
     buildSidebar();
-    applyTheme(gameState.settings.theme);
+    applyTheme();
     buildPage('woodcutting');
     setupEventListeners();
 
-    // Start the main game loop
     setInterval(gameTick, 250);
 }
 
-// Add event listeners for global state changes
-window.addEventListener('themeChanged', (e) => applyTheme(e.detail.theme));
+window.addEventListener('themeChanged', applyTheme);
 window.addEventListener('pageChanged', (e) => buildPage(e.detail.page));
 
-// Start the app once the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', initializeApp);

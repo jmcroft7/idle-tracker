@@ -1,36 +1,46 @@
-// --- DEFAULT GAME STATE ---
-const defaultState = {
-    skills: {
-        woodcutting: { level: 1, xp: 0 },
-        reading:     { level: 1, xp: 0 },
-        writing:     { level: 1, xp: 0 },
-        gaming:      { level: 1, xp: 0 },
-        coding:      { level: 1, xp: 0 },
-        fitness:     { level: 1, xp: 0 },
-        cooking:     { level: 1, xp: 0 },
-        mycology:    { level: 1, xp: 0 },
-    },
-    stats: {
-        woodcutting: { treesCut: 0 },
-        reading:     { booksRead: 0 },
-        writing:     { poemsWritten: 0 },
-        gaming:      { matchesPlayed: 0 },
-        coding:      { bugsFixed: 0 },
-        fitness:     { workoutsCompleted: 0 },
-        cooking:     { mealsCooked: 0 },
-        mycology:    { mushroomsForaged: 0 },
-    },
-    settings: {
-        theme: 'dark',
-    },
-    activeAction: null,
-    xpThresholds: [0, 100, 250, 500, 1000, 2000, 4000, 8000, 15000, 30000]
-};
+import { SKILL_DATA, XP_THRESHOLDS } from './data.js';
 
-// --- GAME STATE VARIABLE ---
+/**
+ * Generates the default state for skills and stats based on the SKILL_DATA object.
+ */
+function generateDefaultState() {
+    const skills = {};
+    const stats = {};
+
+    for (const skillName in SKILL_DATA) {
+        skills[skillName] = { level: 1, xp: 0 };
+        stats[skillName] = {};
+        for (const actionName in SKILL_DATA[skillName].actions) {
+            const statName = SKILL_DATA[skillName].actions[actionName].statName;
+            if (statName) {
+                stats[skillName][statName] = 0;
+            }
+        }
+    }
+
+    return {
+        skills,
+        stats,
+        unlockedSkills: [
+            'woodcutting', 'reading', 'writing', 'gaming', 'coding', 
+            'fitness', 'cooking', 'mycology', 'fishing', 'mining'
+        ],
+        settings: {
+            useDarkMode: true,
+            backgroundImage: 'none',
+            notificationPosition: 'bottom-center',
+            notificationDuration: 3000,
+            notificationShowName: true,
+            skillSortByLevel: false, // New setting for sorting
+        },
+        activeAction: null,
+        xpThresholds: XP_THRESHOLDS,
+    };
+}
+
+
+const defaultState = generateDefaultState();
 export let gameState = {};
-
-// --- STATE FUNCTIONS ---
 
 /**
  * Saves the current game state to localStorage.
@@ -46,20 +56,16 @@ export function loadData() {
     const savedData = localStorage.getItem('idleGameSave');
     let parsedData = savedData ? JSON.parse(savedData) : null;
 
-    // --- MIGRATION LOGIC for old stats format ---
-    if (parsedData && parsedData.stats && typeof parsedData.stats.woodcutting === 'number') {
-        console.log("Migrating old stats format to new nested format...");
-        const newStats = JSON.parse(JSON.stringify(defaultState.stats)); // Get a clean, new stats structure
-        
-        for (const skillName in newStats) {
-            if (parsedData.stats[skillName] !== undefined) {
-                const statKey = Object.keys(newStats[skillName])[0]; // e.g., 'treesCut'
-                newStats[skillName][statKey] = parsedData.stats[skillName]; // Assign the old value
-            }
+    if (parsedData) {
+        if (parsedData.settings && parsedData.settings.theme) {
+            parsedData.settings.useDarkMode = parsedData.settings.theme === 'dark';
+            delete parsedData.settings.theme;
         }
-        parsedData.stats = newStats; // Overwrite the old stats with the new structure
+
+        if (parsedData.activeAction && (!parsedData.activeAction.skillName || !SKILL_DATA[parsedData.activeAction.skillName])) {
+            parsedData.activeAction = null;
+        }
     }
-    // --- END MIGRATION ---
 
     if (parsedData) {
         gameState = deepMerge(defaultState, parsedData);
