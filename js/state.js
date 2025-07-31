@@ -1,17 +1,30 @@
 // --- DEFAULT GAME STATE ---
 const defaultState = {
     skills: {
-        woodcutting: {
-            level: 1,
-            xp: 0,
-        },
-        // Future skills can be added here
+        woodcutting: { level: 1, xp: 0 },
+        reading:     { level: 1, xp: 0 },
+        writing:     { level: 1, xp: 0 },
+        gaming:      { level: 1, xp: 0 },
+        coding:      { level: 1, xp: 0 },
+        fitness:     { level: 1, xp: 0 },
+        cooking:     { level: 1, xp: 0 },
+        mycology:    { level: 1, xp: 0 },
+    },
+    stats: {
+        woodcutting: { treesCut: 0 },
+        reading:     { booksRead: 0 },
+        writing:     { poemsWritten: 0 },
+        gaming:      { matchesPlayed: 0 },
+        coding:      { bugsFixed: 0 },
+        fitness:     { workoutsCompleted: 0 },
+        cooking:     { mealsCooked: 0 },
+        mycology:    { mushroomsForaged: 0 },
     },
     settings: {
         theme: 'dark',
     },
-    // XP thresholds for leveling up
-    xpThresholds: [0, 100, 250, 500, 1000, 2000, 4000, 8000]
+    activeAction: null,
+    xpThresholds: [0, 100, 250, 500, 1000, 2000, 4000, 8000, 15000, 30000]
 };
 
 // --- GAME STATE VARIABLE ---
@@ -31,13 +44,30 @@ export function saveData() {
  */
 export function loadData() {
     const savedData = localStorage.getItem('idleGameSave');
-    if (savedData) {
-        // Use saved data, but merge with defaults to ensure all keys exist
-        gameState = deepMerge(defaultState, JSON.parse(savedData));
+    let parsedData = savedData ? JSON.parse(savedData) : null;
+
+    // --- MIGRATION LOGIC for old stats format ---
+    if (parsedData && parsedData.stats && typeof parsedData.stats.woodcutting === 'number') {
+        console.log("Migrating old stats format to new nested format...");
+        const newStats = JSON.parse(JSON.stringify(defaultState.stats)); // Get a clean, new stats structure
+        
+        for (const skillName in newStats) {
+            if (parsedData.stats[skillName] !== undefined) {
+                const statKey = Object.keys(newStats[skillName])[0]; // e.g., 'treesCut'
+                newStats[skillName][statKey] = parsedData.stats[skillName]; // Assign the old value
+            }
+        }
+        parsedData.stats = newStats; // Overwrite the old stats with the new structure
+    }
+    // --- END MIGRATION ---
+
+    if (parsedData) {
+        gameState = deepMerge(defaultState, parsedData);
     } else {
-        gameState = { ...defaultState };
+        gameState = JSON.parse(JSON.stringify(defaultState));
     }
 }
+
 
 /**
  * Updates a setting and saves the game.
