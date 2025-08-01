@@ -1,3 +1,5 @@
+// idle-tracker/js/components/6_settingsPage.js
+
 import { gameState } from '../state.js';
 import { BACKGROUND_OPTIONS } from '../data.js';
 
@@ -12,6 +14,19 @@ export function buildSettingsPage() {
         <div class="settings-container">
             <h2 class="page-header">Settings</h2>
             <div class="settings-section">
+                <h3 class="settings-header">Game Settings</h3>
+                 <div class="form-group form-group--toggle">
+                    <label for="hard-mode-toggle">
+                        Enable Hard Mode (10,000 hours)
+                        <small>Recommended to enable at the start of a new game.</small>
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="hard-mode-toggle" ${settings.hardMode ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="settings-section">
                 <h3 class="settings-header">Interface Settings</h3>
                 <div class="form-group form-group--toggle">
                     <label for="dark-mode-toggle">Toggle Dark Mode</label>
@@ -19,10 +34,17 @@ export function buildSettingsPage() {
                 </div>
                 <div class="form-group">
                     <label for="background-image-select">Background Image</label>
-                    <select id="background-image-select">${optionsHtml}</select>
+                    <select id="background-image-select" class="styled-select">${optionsHtml}</select>
                     <div class="background-preview ${settings.backgroundImage !== 'none' ? '' : 'hidden'}">
                         <img id="background-preview-img" src="${settings.backgroundImage !== 'none' ? settings.backgroundImage : ''}" alt="Background preview">
                     </div>
+                </div>
+                 <div class="form-group form-group--toggle">
+                    <label for="show-hours-toggle">Show Hours Instead of XP</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="show-hours-toggle" ${settings.showHoursInsteadOfXP ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
                 <div class="form-group form-group--toggle">
                     <label for="skill-sort-toggle">Sort Skills by Level in Sidebar</label>
@@ -31,12 +53,19 @@ export function buildSettingsPage() {
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
+                 <div class="form-group form-group--toggle">
+                    <label for="group-skills-toggle">Group Skills by Category in Sidebar</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="group-skills-toggle" ${settings.groupSkillsInSidebar ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
             </div>
             <div class="settings-section">
                 <h3 class="settings-header">Notification Settings</h3>
                 <div class="form-group">
                     <label for="notification-position">Notification Position</label>
-                    <select id="notification-position">
+                    <select id="notification-position" class="styled-select">
                         <option value="bottom-left" ${settings.notificationPosition === 'bottom-left' ? 'selected' : ''}>Left</option>
                         <option value="bottom-center" ${settings.notificationPosition === 'bottom-center' ? 'selected' : ''}>Center</option>
                         <option value="bottom-right" ${settings.notificationPosition === 'bottom-right' ? 'selected' : ''}>Right</option>
@@ -44,7 +73,7 @@ export function buildSettingsPage() {
                 </div>
                 <div class="form-group">
                     <label for="notification-duration">Notification Delay</label>
-                    <select id="notification-duration">
+                    <select id="notification-duration" class="styled-select">
                         <option value="2000" ${settings.notificationDuration === 2000 ? 'selected' : ''}>2 seconds</option>
                         <option value="3000" ${settings.notificationDuration === 3000 ? 'selected' : ''}>3 seconds</option>
                         <option value="5000" ${settings.notificationDuration === 5000 ? 'selected' : ''}>5 seconds</option>

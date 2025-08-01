@@ -1,10 +1,13 @@
+// idle-tracker/js/handlers.js
+
 import { gameState, saveData, updateSetting } from './state.js';
 import { showToast, updateSidebarLevel, applyTheme, buildSidebar, buildPage } from './ui.js';
 import { handleSkillSelection } from './components/5_skillManagerPage.js';
 import { setSelectedStatSkill } from './components/4_statsPage.js';
 import { setSelectedShopTab } from './components/1_shopPage.js';
+import { setSelectedSkillTab } from './components/3_skillPage.js';
 import { processActiveAction } from './main.js';
-import { SKILL_DATA, ALL_SKILL_NAMES, SHOP_DATA } from './data.js';
+import { SKILL_DATA, ALL_SKILL_NAMES, SHOP_DATA, MAX_LEVEL } from './data.js';
 
 /**
  * Sets up global event listeners for the application.
@@ -28,9 +31,32 @@ function handleSidebarClick(e) {
         const targetId = collapsibleHeader.dataset.collapsibleTarget;
         const targetList = document.getElementById(targetId);
         const icon = collapsibleHeader.querySelector('.collapse-icon');
+        
         if (targetList) {
-            targetList.classList.toggle('collapsed');
-            if (icon) icon.textContent = targetList.classList.contains('collapsed') ? '🙈' : '👁️';
+            const isCollapsed = targetList.classList.toggle('collapsed');
+            if (icon) icon.textContent = isCollapsed ? '🙈' : '👁️';
+
+            // Handle state for the single skills list
+            if (targetId === 'skills-nav-all') {
+                updateSetting('skillsCollapsed', isCollapsed);
+                return; // Early exit
+            }
+
+            // Handle state for skill group collapsing
+            const groupKey = targetId.includes('skills-nav-') 
+                ? targetId.replace('skills-nav-', '') 
+                : targetId.includes('general-nav-list') ? 'general' : null;
+            
+            if (groupKey) {
+                 if (isCollapsed) {
+                    if (!gameState.collapsedSkillGroups.includes(groupKey)) {
+                        gameState.collapsedSkillGroups.push(groupKey);
+                    }
+                } else {
+                    gameState.collapsedSkillGroups = gameState.collapsedSkillGroups.filter(g => g !== groupKey);
+                }
+                saveData();
+            }
         }
         return;
     }
@@ -56,6 +82,19 @@ function handleMainContentClick(e) {
     if (shopTabButton) {
         setSelectedShopTab(shopTabButton.dataset.shopTab);
         buildPage('shop');
+        return;
+    }
+
+    const skillTabButton = e.target.closest('[data-skill-tab]');
+    if (skillTabButton) {
+        setSelectedSkillTab(skillTabButton.dataset.skillTab);
+        buildPage(skillTabButton.dataset.skillName);
+        return;
+    }
+
+    const completeTaskButton = e.target.closest('[data-complete-task]');
+    if(completeTaskButton) {
+        handleCompleteTask(completeTaskButton.dataset.completeTask);
         return;
     }
 
@@ -113,12 +152,50 @@ function toggleSkillAction(skillName, actionName) {
     saveData();
 }
 
+function handleSkillGroupChange(skillName, newGroup) {
+    const { skillGroups } = gameState;
+
+    // Remove skill from its current group
+    for (const group in skillGroups) {
+        const index = skillGroups[group].indexOf(skillName);
+        if (index > -1) {
+            skillGroups[group].splice(index, 1);
+            break;
+        }
+    }
+
+    // Add skill to the new group
+    if (skillGroups[newGroup]) {
+        skillGroups[newGroup].push(skillName);
+    }
+
+    saveData();
+    buildSidebar(); // Re-render the sidebar to show the change
+}
+
 function handleSettingsChange(e) {
-    const { id, value, checked } = e.target;
+    const { id, value, checked, dataset } = e.target;
+
+    // Handle skill group changes
+    if (e.target.classList.contains('skill-group-select')) {
+        handleSkillGroupChange(dataset.skillName, value);
+        return;
+    }
+    
+    const activePage = document.querySelector('.nav-item.active')?.dataset.page;
+    
     switch (id) {
         case 'dark-mode-toggle':
             updateSetting('useDarkMode', checked);
             applyTheme();
+            break;
+        case 'hard-mode-toggle':
+            updateSetting('hardMode', checked);
+            if (activePage && SKILL_DATA[activePage]) buildPage(activePage);
+            break;
+        case 'show-hours-toggle':
+             updateSetting('showHoursInsteadOfXP', checked);
+             if (activePage && SKILL_DATA[activePage]) buildPage(activePage);
             break;
         case 'background-image-select':
             updateSetting('backgroundImage', value);
@@ -148,6 +225,10 @@ function handleSettingsChange(e) {
                 buildPage('skillManager');
             }
             break;
+        case 'group-skills-toggle':
+            updateSetting('groupSkillsInSidebar', checked);
+            buildSidebar();
+            break;
     }
 }
 
@@ -169,6 +250,28 @@ function handleEquipTitle(titleKey) {
         gameState.equippedTitle = titleKey;
         saveData();
         buildPage('shop');
+    }
+}
+
+function handleCompleteTask(taskKey) {
+    const [skillName, taskName] = taskKey.split('_');
+    const taskData = SKILL_DATA[skillName].tasks[taskName];
+
+    if (taskData && !gameState.completedTasks.includes(taskKey)) {
+        const skillState = gameState.skills[skillName];
+        if(taskData.requiredLevel && skillState.level < taskData.requiredLevel) {
+            showToast("You don't have the required level for this task.", '⛔');
+            return;
+        }
+
+        gameState.skills[skillName].xp += taskData.rewards.xp;
+        gameState.coins += taskData.rewards.coins;
+        gameState.completedTasks.push(taskKey);
+        
+        checkLevelUp(skillName);
+        saveData();
+        buildPage(skillName);
+        showToast(`Task completed: ${taskData.name}!`, '🎉');
     }
 }
 
@@ -215,17 +318,21 @@ function handleSaveToFile() {
 }
 
 /**
- * Checks if a skill has enough XP to level up. Can handle multiple level ups from a large XP gain.
+ * Checks if a skill has enough XP to level up. Can handle multiple level ups.
  * @param {string} skillName The name of the skill to check.
  */
 export function checkLevelUp(skillName) {
     let leveledUp = false;
+    const { xpThresholds } = gameState;
+
     while (true) {
         const skill = gameState.skills[skillName];
-        const nextLevelXp = gameState.xpThresholds[skill.level];
-        if (nextLevelXp && skill.xp >= nextLevelXp) {
+        if (skill.level >= MAX_LEVEL) break;
+
+        const nextLevelXp = xpThresholds[skill.level + 1];
+
+        if (nextLevelXp !== undefined && skill.xp >= nextLevelXp) {
             skill.level++;
-            skill.xp -= nextLevelXp;
             const skillData = SKILL_DATA[skillName];
             const fullMessage = `${skillData.displayName} level up! Reached <span class="toast-xp">level ${skill.level}</span>.`;
             const compactMessage = `Level Up! <span class="toast-xp">${skill.level}</span>`;
@@ -233,7 +340,7 @@ export function checkLevelUp(skillName) {
             updateSidebarLevel(skillName);
             leveledUp = true;
         } else {
-            break;
+            break; // Exit loop if not enough hours for the next level
         }
     }
     return leveledUp;

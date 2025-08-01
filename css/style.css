@@ -1,3 +1,5 @@
+/* idle-tracker/css/style.css */
+
 /* Core Layout & App Container */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,7 +20,7 @@ body {
 body.body-has-background {
     background-color: rgba(var(--bg-primary-rgb), 0.7);
 }
-body.body-has-background .form-group select {
+body.body-has-background .styled-select {
     background-color: rgba(var(--bg-tertiary-rgb, var(--bg-primary-rgb)), 0.8);
 }
 
@@ -244,14 +246,19 @@ body.body-has-background .form-group select {
     gap: 20px;
 }
 
-.action-card {
+/* Generic Card Style */
+.card {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    transition: background-color 0.3s;
+    transition: all 0.2s ease;
+}
+
+.action-card {
+    /* Inherits from .card */
 }
 
 .action-card.locked {
@@ -266,13 +273,23 @@ body.body-has-background .form-group select {
 .action-card__title {
     font-size: 1.4em;
     font-weight: 600;
-    margin: 0 0 5px 0;
+    margin: 0 0 15px 0;
 }
 
-.action-card__subtitle {
-    font-size: 0.9em;
-    color: var(--text-secondary);
-    margin-bottom: 20px;
+.action-card__details {
+    display: flex;
+    justify-content: flex-start;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 1em;
+    font-weight: 500;
+}
+
+.action-card__detail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .action-card__progress-bar {
@@ -281,6 +298,7 @@ body.body-has-background .form-group select {
     background-color: var(--bg-tertiary);
     border-radius: 4px;
     overflow: hidden;
+    margin-top: auto;
     margin-bottom: 20px;
 }
 
@@ -289,6 +307,68 @@ body.body-has-background .form-group select {
     height: 100%;
     background-color: var(--accent-color);
     transition: width 0.25s linear;
+}
+
+/* Task Card Styles */
+.task-card {
+    /* Inherits from .card */
+    gap: 15px;
+}
+
+.task-card.completed {
+    opacity: 0.65;
+}
+
+.task-card.completed .task-card__name {
+    text-decoration: line-through;
+}
+
+.task-card__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.task-card__name {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 0;
+}
+
+.task-card__description {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin: 0;
+    flex-grow: 1; /* Allows description to take up available space */
+}
+
+.task-card__rewards {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    flex-wrap: wrap;
+}
+
+.task-card__reward {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.task-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    margin-top: auto; /* Pushes footer to the bottom */
+}
+
+.task-card__footer .button {
+    padding: 8px 16px;
+    min-width: 110px;
+    text-align: center;
 }
 
 /* Shop Page Styles */
@@ -362,7 +442,11 @@ body.body-has-background .form-group select {
 .shop-item-card__actions {
     margin-left: auto;
 }
-.shop-item-card__requirement {
+
+/* Generic Requirement Pill Styles */
+.action-card__requirement,
+.shop-item-card__requirement,
+.task-card__requirement {
     font-size: 0.9em;
     font-weight: 600;
     padding: 4px 10px;
@@ -370,15 +454,23 @@ body.body-has-background .form-group select {
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-shrink: 0; /* Prevents shrinking in flex containers */
 }
-.shop-item-card__requirement.has-requirement {
+
+.action-card__requirement.has-requirement,
+.shop-item-card__requirement.has-requirement,
+.task-card__requirement.has-requirement {
     background-color: rgba(52, 211, 153, 0.1);
-    color: #34D399;
+    color: #34D399; /* Green for met requirements */
 }
-.shop-item-card__requirement.missing-requirement {
+
+.action-card__requirement.missing-requirement,
+.shop-item-card__requirement.missing-requirement,
+.task-card__requirement.missing-requirement {
     background-color: rgba(239, 68, 68, 0.1);
-    color: #EF4444;
+    color: #EF4444; /* Red for unmet requirements */
 }
+
 
 .shop-item-card__actions .button {
     padding: 8px 16px;
@@ -508,6 +600,39 @@ body.body-has-background .form-group select {
 .skill-manager-card.training {
     border: 1px solid var(--accent-color);
     box-shadow: 0 0 15px rgba(var(--accent-color-rgb, 52, 211, 153), 0.3);
+}
+
+/* Skill Group Manager Page Styles */
+.skill-group-manager-container {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 20px;
+    max-width: 800px;
+}
+
+.skill-group-manager-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skill-group-manager-row:last-child {
+    border-bottom: none;
+}
+
+.skill-group-manager-row__skill-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.skill-group-manager-row__icon {
+    font-size: 1.5em;
 }
 
 
@@ -644,8 +769,8 @@ body.body-has-background .form-group select {
     margin-bottom: 0;
 }
 
-
-.form-group select {
+/* Generic Styled Select (Dropdown) */
+.styled-select {
     width: 100%;
     padding: 10px;
     background: var(--bg-tertiary);
@@ -654,6 +779,12 @@ body.body-has-background .form-group select {
     border-radius: 6px;
     font-size: 1em;
 }
+
+.skill-group-manager-row__actions .styled-select {
+    min-width: 180px;
+    width: auto;
+}
+
 
 .background-preview {
     margin-top: 15px;

@@ -1,4 +1,6 @@
-import { SKILL_DATA, XP_THRESHOLDS } from './data.js';
+// idle-tracker/js/state.js
+
+import { SKILL_DATA, XP_THRESHOLDS, DEFAULT_SKILL_GROUPS, DEFAULT_SKILL_ASSIGNMENTS, NORMAL_XP_PER_HOUR } from './data.js';
 
 /**
  * Generates the default state for skills and stats based on the SKILL_DATA object.
@@ -6,9 +8,15 @@ import { SKILL_DATA, XP_THRESHOLDS } from './data.js';
 function generateDefaultState() {
     const skills = {};
     const stats = {};
+    const skillGroups = {};
+
+    // Initialize default skill groups
+    DEFAULT_SKILL_GROUPS.forEach(group => {
+        skillGroups[group] = [];
+    });
 
     for (const skillName in SKILL_DATA) {
-        skills[skillName] = { level: 1, xp: 0 };
+        skills[skillName] = { level: 1, xp: 0 }; // Back to xp
         stats[skillName] = {};
         for (const actionName in SKILL_DATA[skillName].actions) {
             const statName = SKILL_DATA[skillName].actions[actionName].statName;
@@ -16,11 +24,17 @@ function generateDefaultState() {
                 stats[skillName][statName] = 0;
             }
         }
+        // Assign skill to its default group
+        const defaultGroup = DEFAULT_SKILL_ASSIGNMENTS[skillName] || 'Hobbies';
+        if (skillGroups[defaultGroup]) {
+            skillGroups[defaultGroup].push(skillName);
+        }
     }
 
     return {
         skills,
         stats,
+        skillGroups,
         coins: 0,
         inventory: [],
         purchasedTitles: [],
@@ -36,9 +50,15 @@ function generateDefaultState() {
             notificationDuration: 3000,
             notificationShowName: true,
             skillSortByLevel: false,
+            groupSkillsInSidebar: false,
+            hardMode: false,
+            showHoursInsteadOfXP: false,
+            skillsCollapsed: false, // New setting
         },
         activeAction: null,
         xpThresholds: XP_THRESHOLDS,
+        completedTasks: [],
+        collapsedSkillGroups: ['Work', 'Relationships'],
     };
 }
 
@@ -61,6 +81,21 @@ export function loadData() {
     let parsedData = savedData ? JSON.parse(savedData) : null;
 
     if (parsedData) {
+        // Migration for older saves with hours
+        if (parsedData.skills && Object.values(parsedData.skills)[0]?.hours !== undefined) {
+             for(const skill in parsedData.skills) {
+                const xpPerHour = parsedData.settings?.hardMode ? 1303.44 : 13034.43;
+                parsedData.skills[skill].xp = (parsedData.skills[skill].hours || 0) * xpPerHour;
+                delete parsedData.skills[skill].hours;
+            }
+        }
+
+        if (!parsedData.skillGroups) {
+            const newDefaultState = generateDefaultState();
+            parsedData.skillGroups = newDefaultState.skillGroups;
+            parsedData.collapsedSkillGroups = newDefaultState.collapsedSkillGroups;
+        }
+
         if (parsedData.settings && parsedData.settings.theme) {
             parsedData.settings.useDarkMode = parsedData.settings.theme === 'dark';
             delete parsedData.settings.theme;

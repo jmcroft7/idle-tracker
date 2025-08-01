@@ -1,3 +1,5 @@
+// idle-tracker/js/ui.js
+
 import { gameState } from './state.js';
 import { buildSidebar } from './components/0_sidebar.js';
 import { buildSkillPage } from './components/3_skillPage.js';
@@ -7,6 +9,8 @@ import { buildAboutPage } from './components/7_aboutPage.js';
 import { buildSkillManagerPage } from './components/5_skillManagerPage.js';
 import { buildBankPage } from './components/2_bankPage.js';
 import { buildShopPage } from './components/1_shopPage.js';
+import { buildSkillGroupManagerPage } from './components/8_skillGroupManagerPage.js';
+import { HARD_XP_PER_HOUR, NORMAL_XP_PER_HOUR, MAX_LEVEL } from './data.js';
 
 const mainContent = document.getElementById('main-content');
 const themeStylesheet = document.getElementById('theme-stylesheet');
@@ -36,6 +40,28 @@ export function applyTheme() {
 }
 
 /**
+ * Formats the progress display string for the info bar (XP or Hours).
+ * @param {object} skillState The state object for the skill.
+ * @returns {string} The HTML string for the progress display.
+ */
+export function formatProgressDisplay(skillState) {
+    const { settings, xpThresholds } = gameState;
+    const { showHoursInsteadOfXP, hardMode } = settings;
+    const isMaxLevel = skillState.level >= MAX_LEVEL;
+    
+    const nextLevelXp = isMaxLevel ? xpThresholds[MAX_LEVEL] : xpThresholds[skillState.level + 1];
+
+    if (showHoursInsteadOfXP) {
+        const xpPerHour = hardMode ? HARD_XP_PER_HOUR : NORMAL_XP_PER_HOUR;
+        const currentHours = (skillState.xp / xpPerHour).toFixed(2);
+        const nextLevelHours = (nextLevelXp / xpPerHour).toFixed(2);
+        return `Total Hours: <span id="skill-progress" class="info-bar__value">${currentHours} / ${nextLevelHours}</span>`;
+    } else {
+        return `Total XP: <span id="skill-progress" class="info-bar__value">${Math.floor(skillState.xp).toLocaleString()} / ${nextLevelXp.toLocaleString()}</span>`;
+    }
+}
+
+/**
  * Maps page names to their corresponding builder functions (components).
  */
 const pageTemplates = {
@@ -45,6 +71,7 @@ const pageTemplates = {
     settings: buildSettingsPage,
     about: buildAboutPage,
     skillManager: buildSkillManagerPage,
+    skillGroupManager: buildSkillGroupManagerPage,
     // Default case for skills
     skill: buildSkillPage,
 };
@@ -93,7 +120,7 @@ export function updateSidebarLevel(skillName) {
     const skill = gameState.skills[skillName];
     const levelElement = document.querySelector(`.nav-item__level[data-level-for="${skillName}"]`);
     if (levelElement) {
-        levelElement.textContent = `(${skill.level}/99)`;
+        levelElement.textContent = `(${skill.level}/${MAX_LEVEL})`;
     }
 }
 

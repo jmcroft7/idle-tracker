@@ -1,12 +1,14 @@
+// idle-tracker/js/main.js
+
 import { gameState, saveData, loadData } from './state.js';
-import { applyTheme, buildPage, buildSidebar, showToast } from './ui.js';
+import { applyTheme, buildPage, buildSidebar, showToast, formatProgressDisplay } from './ui.js';
 import { setupEventListeners, checkLevelUp } from './handlers.js';
-import { SKILL_DATA } from './data.js';
+import { SKILL_DATA, NORMAL_XP_PER_HOUR, HARD_XP_PER_HOUR } from './data.js';
 
 let lastActiveSkill = null;
 
 /**
- * Processes the active action, calculating completions and updating the state.
+ * Processes the active action, calculating progress in hours and updating state.
  */
 export function processActiveAction() {
     if (!gameState.activeAction) return;
@@ -16,43 +18,49 @@ export function processActiveAction() {
     const now = Date.now();
     const elapsedTime = now - startTime;
 
-    if (elapsedTime >= action.duration) {
+    if (elapsedTime > 0) {
+        const xpPerHour = gameState.settings.hardMode ? HARD_XP_PER_HOUR : NORMAL_XP_PER_HOUR;
+        const xpGained = (elapsedTime / (1000 * 60 * 60)) * xpPerHour;
         const completions = Math.floor(elapsedTime / action.duration);
-        if (completions === 0) return;
         
-        const xpGained = completions * action.xp;
-        const coinsGained = completions * (action.coins || 0);
-
-        // Update state
         gameState.skills[skillName].xp += xpGained;
-        gameState.coins += coinsGained;
-        if (gameState.stats[skillName][action.statName] !== undefined) {
-            gameState.stats[skillName][action.statName] += completions;
-        }
-        gameState.activeAction.startTime += completions * action.duration;
-        saveData();
-
-        // Handle UI updates and notifications
-        const leveledUp = checkLevelUp(skillName);
-        if (!leveledUp) {
-            const skillData = SKILL_DATA[skillName];
-            let fullMessage = `<span class="toast-xp">+${xpGained}</span> ${skillData.displayName} XP`;
-            let compactMessage = `<span class="toast-xp">+${xpGained}</span> XP`;
-            if (coinsGained > 0) {
-                fullMessage += `, <span class="toast-coins">+${coinsGained}</span> Coins`;
-                compactMessage += `, <span class="toast-coins">+${coinsGained}</span>`;
+        
+        if (completions > 0) {
+            const coinsGained = completions * (action.coins || 0);
+            gameState.coins += coinsGained;
+            if (gameState.stats[skillName][action.statName] !== undefined) {
+                gameState.stats[skillName][action.statName] += completions;
             }
-            showToast({ type: 'skill', message: fullMessage, compactMessage, icon: skillData.icon });
+            gameState.activeAction.startTime += completions * action.duration;
+            
+            // Show a toast for the completed actions
+             const leveledUp = checkLevelUp(skillName);
+             if (!leveledUp) {
+                const skillData = SKILL_DATA[skillName];
+                const gainedXpForToast = Math.floor((action.duration / (1000 * 60 * 60)) * xpPerHour * completions);
+                let fullMessage = `<span class="toast-xp">+${gainedXpForToast.toLocaleString()}</span> ${skillData.displayName} XP`;
+                let compactMessage = `<span class="toast-xp">+${gainedXpForToast.toLocaleString()}</span> XP`;
+                if (coinsGained > 0) {
+                    fullMessage += `, <span class="toast-coins">+${coinsGained}</span> Coins`;
+                    compactMessage += `, <span class="toast-coins">+${coinsGained}</span>`;
+                }
+                showToast({ type: 'skill', message: fullMessage, compactMessage, icon: skillData.icon });
+            }
         }
+        
+        saveData();
 
         const activePage = document.querySelector('.nav-item.active')?.dataset.page;
         if (activePage === skillName) {
             const skill = gameState.skills[skillName];
-            const nextLevelXp = gameState.xpThresholds[skill.level] || 'Max';
             const skillLevelEl = document.getElementById('skill-level');
-            const skillXpEl = document.getElementById('skill-xp');
+            const progressContainer = document.getElementById('progress-display-container');
+
             if (skillLevelEl) skillLevelEl.textContent = skill.level;
-            if (skillXpEl) skillXpEl.textContent = `${skill.xp} / ${nextLevelXp}`;
+            
+            if (progressContainer) {
+                progressContainer.innerHTML = formatProgressDisplay(skill);
+            }
         }
     }
 }
@@ -75,14 +83,14 @@ function gameTick() {
         const { skillName, actionName, startTime } = gameState.activeAction;
         const action = SKILL_DATA[skillName].actions[actionName];
         const now = Date.now();
-        const elapsedTime = now - startTime;
-        const progressPercent = elapsedTime / action.duration;
+        const elapsedTimeSinceLastCompletion = (now - startTime) % action.duration;
+        const progressPercent = (elapsedTimeSinceLastCompletion / action.duration) * 100;
         
         const activePage = document.querySelector('.nav-item.active')?.dataset.page;
         if (activePage === skillName) {
             const progressBar = document.getElementById(`progress-bar-${actionName}`);
             if (progressBar) {
-                progressBar.style.width = `${Math.min(progressPercent * 100, 100)}%`;
+                progressBar.style.width = `${progressPercent}%`;
             }
         }
 
@@ -93,7 +101,7 @@ function gameTick() {
             if(ring) {
                 const radius = ring.r.baseVal.value;
                 const circumference = 2 * Math.PI * radius;
-                const offset = circumference * (1 - Math.min(progressPercent, 1));
+                const offset = circumference * (1 - (progressPercent / 100));
                 ring.style.strokeDasharray = `${circumference} ${circumference}`;
                 ring.style.strokeDashoffset = offset;
             }
