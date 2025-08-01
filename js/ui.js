@@ -1,10 +1,12 @@
 import { gameState } from './state.js';
-import { buildSidebar } from './components/sidebar.js';
-import { buildSkillPage } from './components/skillPage.js';
-import { buildStatsPage, setSelectedStatSkill } from './components/statsPage.js';
-import { buildSettingsPage } from './components/settingsPage.js';
-import { buildAboutPage } from './components/aboutPage.js';
-import { buildSkillManagerPage } from './components/skillManagerPage.js';
+import { buildSidebar } from './components/0_sidebar.js';
+import { buildSkillPage } from './components/3_skillPage.js';
+import { buildStatsPage, setSelectedStatSkill } from './components/4_statsPage.js';
+import { buildSettingsPage } from './components/6_settingsPage.js';
+import { buildAboutPage } from './components/7_aboutPage.js';
+import { buildSkillManagerPage } from './components/5_skillManagerPage.js';
+import { buildBankPage } from './components/2_bankPage.js';
+import { buildShopPage } from './components/1_shopPage.js';
 
 const mainContent = document.getElementById('main-content');
 const themeStylesheet = document.getElementById('theme-stylesheet');
@@ -37,6 +39,8 @@ export function applyTheme() {
  * Maps page names to their corresponding builder functions (components).
  */
 const pageTemplates = {
+    shop: buildShopPage,
+    bank: buildBankPage,
     stats: buildStatsPage,
     settings: buildSettingsPage,
     about: buildAboutPage,

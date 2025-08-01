@@ -1,9 +1,10 @@
 import { gameState, saveData, updateSetting } from './state.js';
 import { showToast, updateSidebarLevel, applyTheme, buildSidebar, buildPage } from './ui.js';
-import { handleSkillSelection } from './components/skillManagerPage.js'; // Import the handler
-import { setSelectedStatSkill } from './components/statsPage.js';
+import { handleSkillSelection } from './components/5_skillManagerPage.js';
+import { setSelectedStatSkill } from './components/4_statsPage.js';
+import { setSelectedShopTab } from './components/1_shopPage.js';
 import { processActiveAction } from './main.js';
-import { SKILL_DATA, ALL_SKILL_NAMES } from './data.js';
+import { SKILL_DATA, ALL_SKILL_NAMES, SHOP_DATA } from './data.js';
 
 /**
  * Sets up global event listeners for the application.
@@ -47,13 +48,31 @@ function handleMainContentClick(e) {
     const statSkillButton = e.target.closest('[data-stat-skill]');
     if (statSkillButton) {
         setSelectedStatSkill(statSkillButton.dataset.statSkill);
-        buildPage('stats'); // Re-render the stats page with the new selection
+        buildPage('stats');
+        return;
+    }
+    
+    const shopTabButton = e.target.closest('[data-shop-tab]');
+    if (shopTabButton) {
+        setSelectedShopTab(shopTabButton.dataset.shopTab);
+        buildPage('shop');
+        return;
+    }
+
+    const buyTitleButton = e.target.closest('[data-buy-title]');
+    if (buyTitleButton) {
+        handleBuyTitle(buyTitleButton.dataset.buyTitle);
+        return;
+    }
+
+    const equipTitleButton = e.target.closest('[data-equip-title]');
+    if (equipTitleButton) {
+        handleEquipTitle(equipTitleButton.dataset.equipTitle);
         return;
     }
 
     const skillManagerCard = e.target.closest('[data-select-skill]');
     if (skillManagerCard) {
-        // **FIX**: Call the imported handler function
         handleSkillSelection(skillManagerCard.dataset.selectSkill);
         return;
     }
@@ -132,6 +151,26 @@ function handleSettingsChange(e) {
     }
 }
 
+function handleBuyTitle(titleKey) {
+    const titleData = SHOP_DATA.titles.items[titleKey];
+    if (titleData && gameState.coins >= titleData.cost) {
+        gameState.coins -= titleData.cost;
+        gameState.purchasedTitles.push(titleKey);
+        saveData();
+        buildPage('shop');
+        showToast(`Purchased the title: ${titleData.name}`, '✨');
+    } else {
+        showToast("You don't have enough coins!", '⛔');
+    }
+}
+
+function handleEquipTitle(titleKey) {
+    if (gameState.purchasedTitles.includes(titleKey)) {
+        gameState.equippedTitle = titleKey;
+        saveData();
+        buildPage('shop');
+    }
+}
 
 function handleFileLoad(event) {
     const file = event.target.files[0];

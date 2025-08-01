@@ -21,6 +21,10 @@ function generateDefaultState() {
     return {
         skills,
         stats,
+        coins: 0,
+        inventory: [],
+        purchasedTitles: [],
+        equippedTitle: null,
         unlockedSkills: [
             'woodcutting', 'reading', 'writing', 'gaming', 'coding', 
             'fitness', 'cooking', 'mycology', 'fishing', 'mining'
@@ -31,7 +35,7 @@ function generateDefaultState() {
             notificationPosition: 'bottom-center',
             notificationDuration: 3000,
             notificationShowName: true,
-            skillSortByLevel: false, // New setting for sorting
+            skillSortByLevel: false,
         },
         activeAction: null,
         xpThresholds: XP_THRESHOLDS,

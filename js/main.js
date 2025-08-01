@@ -19,10 +19,13 @@ export function processActiveAction() {
     if (elapsedTime >= action.duration) {
         const completions = Math.floor(elapsedTime / action.duration);
         if (completions === 0) return;
+        
         const xpGained = completions * action.xp;
+        const coinsGained = completions * (action.coins || 0);
 
         // Update state
         gameState.skills[skillName].xp += xpGained;
+        gameState.coins += coinsGained;
         if (gameState.stats[skillName][action.statName] !== undefined) {
             gameState.stats[skillName][action.statName] += completions;
         }
@@ -33,8 +36,12 @@ export function processActiveAction() {
         const leveledUp = checkLevelUp(skillName);
         if (!leveledUp) {
             const skillData = SKILL_DATA[skillName];
-            const fullMessage = `<span class="toast-xp">+${xpGained}</span> ${skillData.displayName} XP`;
-            const compactMessage = `<span class="toast-xp">+${xpGained}</span> XP`;
+            let fullMessage = `<span class="toast-xp">+${xpGained}</span> ${skillData.displayName} XP`;
+            let compactMessage = `<span class="toast-xp">+${xpGained}</span> XP`;
+            if (coinsGained > 0) {
+                fullMessage += `, <span class="toast-coins">+${coinsGained}</span> Coins`;
+                compactMessage += `, <span class="toast-coins">+${coinsGained}</span>`;
+            }
             showToast({ type: 'skill', message: fullMessage, compactMessage, icon: skillData.icon });
         }
 
@@ -73,7 +80,6 @@ function gameTick() {
         
         const activePage = document.querySelector('.nav-item.active')?.dataset.page;
         if (activePage === skillName) {
-            // **FIX**: Select the correct progress bar for the currently running action
             const progressBar = document.getElementById(`progress-bar-${actionName}`);
             if (progressBar) {
                 progressBar.style.width = `${Math.min(progressPercent * 100, 100)}%`;
@@ -94,6 +100,12 @@ function gameTick() {
         }
     }
     
+    // Update the coin display in the sidebar header
+    const walletDisplay = document.getElementById('sidebar-wallet-coins');
+    if (walletDisplay) {
+        walletDisplay.textContent = gameState.coins.toLocaleString();
+    }
+
     lastActiveSkill = currentActiveSkill;
 }
 
