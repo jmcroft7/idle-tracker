@@ -1,11 +1,32 @@
 // idle-tracker/js/main.js
 
 import { gameState, saveData, loadData } from './state.js';
-import { applyTheme, buildPage, buildSidebar, showToast, formatProgressDisplay } from './ui.js';
+import { applyTheme, buildPage, buildSidebar, showToast, formatProgressDisplay, updatePlayerNameDisplay } from './ui.js';
 import { setupEventListeners, checkLevelUp } from './handlers.js';
 import { SKILL_DATA, NORMAL_XP_PER_HOUR, HARD_XP_PER_HOUR } from './data.js';
 
 let lastActiveSkill = null;
+
+/**
+ * Saves the current game state to a JSON file and triggers a download.
+ */
+export function saveGameToFile() {
+    try {
+        const gameStateString = JSON.stringify(gameState, null, 2);
+        const blob = new Blob([gameStateString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `idle-game-save-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Game Saved to File!');
+    } catch (error) {
+        console.error("Failed to save game:", error);
+        showToast('Error: Could not save game.');
+    }
+}
+
 
 /**
  * Processes the active action, calculating progress in hours and updating state.
@@ -117,11 +138,24 @@ function gameTick() {
     lastActiveSkill = currentActiveSkill;
 }
 
+/**
+ * Resets the game to its default state after saving the current progress.
+ */
+export function resetGame() {
+    if (confirm("Are you sure you want to reset your game? Your current progress will be downloaded as a save file before resetting.")) {
+        saveGameToFile();
+        localStorage.removeItem('idleGameSave');
+        showToast('Game has been reset.');
+        setTimeout(() => location.reload(), 1000);
+    }
+}
+
 function initializeApp() {
     loadData();
     buildSidebar();
     applyTheme();
     buildPage('woodcutting');
+    updatePlayerNameDisplay();
     setupEventListeners();
 
     setInterval(gameTick, 250);

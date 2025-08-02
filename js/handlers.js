@@ -1,13 +1,13 @@
 // idle-tracker/js/handlers.js
 
-import { gameState, saveData, updateSetting } from './state.js';
-import { showToast, updateSidebarLevel, applyTheme, buildSidebar, buildPage } from './ui.js';
+import { gameState, saveData, updateSetting, } from './state.js';
+import { showToast, updateSidebarLevel, applyTheme, buildSidebar, buildPage, updatePlayerNameDisplay } from './ui.js';
 import { handleSkillSelection } from './components/5_skillManagerPage.js';
 import { setSelectedStatSkill } from './components/4_statsPage.js';
 import { setSelectedShopTab } from './components/1_shopPage.js';
 import { setSelectedSkillTab } from './components/3_skillPage.js';
-import { processActiveAction } from './main.js';
-import { SKILL_DATA, ALL_SKILL_NAMES, SHOP_DATA, MAX_LEVEL } from './data.js';
+import { processActiveAction, saveGameToFile, resetGame } from './main.js';
+import { SKILL_DATA, ALL_SKILL_NAMES, SHOP_DATA, MAX_LEVEL, NORMAL_XP_PER_HOUR, HARD_XP_PER_HOUR } from './data.js';
 
 /**
  * Sets up global event listeners for the application.
@@ -19,6 +19,7 @@ export function setupEventListeners() {
 
     sidebar.addEventListener('click', handleSidebarClick);
     mainContent.addEventListener('click', handleMainContentClick);
+    mainContent.addEventListener('input', handleMainContentInput);
     mainContent.addEventListener('change', handleSettingsChange);
     loadFileInput.addEventListener('change', handleFileLoad);
 }
@@ -70,7 +71,48 @@ function handleSidebarClick(e) {
     }
 }
 
+function handleManualTimeAdd() {
+    const skillSelect = document.getElementById('manual-skill-select');
+    const durationInput = document.getElementById('manual-duration-input');
+    const unitSelect = document.getElementById('manual-unit-select');
+
+    const skillName = skillSelect.value;
+    const duration = parseFloat(durationInput.value);
+    const unit = unitSelect.value;
+
+    if (!skillName || !duration || duration <= 0) {
+        showToast("Please select a skill and enter a valid duration.", '⛔');
+        return;
+    }
+
+    // Calculate total hours
+    const hours = unit === 'hours' ? duration : duration / 60;
+
+    // Calculate XP
+    const xpPerHour = gameState.settings.hardMode ? HARD_XP_PER_HOUR : NORMAL_XP_PER_HOUR;
+    const xpGained = hours * xpPerHour;
+
+    // Update state
+    gameState.skills[skillName].xp += xpGained;
+    checkLevelUp(skillName);
+    saveData();
+
+    // Feedback
+    showToast(`Added ${duration.toLocaleString()} ${unit} to ${SKILL_DATA[skillName].displayName}.`, '🎉');
+    buildPage(skillName); // Navigate to the skill page to see progress
+}
+
+
 function handleMainContentClick(e) {
+    const playerDropdownToggle = e.target.closest('#player-dropdown-toggle');
+    if (playerDropdownToggle) {
+        const menu = document.getElementById('player-dropdown-menu');
+        if (menu) {
+            menu.classList.toggle('show');
+        }
+        return;
+    }
+
     const statSkillButton = e.target.closest('[data-stat-skill]');
     if (statSkillButton) {
         setSelectedStatSkill(statSkillButton.dataset.statSkill);
@@ -123,8 +165,26 @@ function handleMainContentClick(e) {
     }
 
     switch (e.target.id) {
-        case 'save-btn': handleSaveToFile(); break;
+        case 'save-btn': saveGameToFile(); break;
         case 'load-btn': document.getElementById('load-file-input').click(); break;
+        case 'save-player-name-btn':
+            showToast('Player name saved!');
+            break;
+        case 'reset-game-btn':
+            resetGame();
+            break;
+        case 'manual-add-btn':
+            handleManualTimeAdd();
+            break;
+    }
+}
+
+function handleMainContentInput(e) {
+    const { id, value } = e.target;
+
+    if (id === 'player-name-input') {
+        updateSetting('playerName', value);
+        updatePlayerNameDisplay();
     }
 }
 
@@ -229,6 +289,11 @@ function handleSettingsChange(e) {
             updateSetting('groupSkillsInSidebar', checked);
             buildSidebar();
             break;
+        case 'title-select':
+            gameState.equippedTitle = value;
+            saveData();
+            updatePlayerNameDisplay();
+            break;
     }
 }
 
@@ -250,6 +315,7 @@ function handleEquipTitle(titleKey) {
         gameState.equippedTitle = titleKey;
         saveData();
         buildPage('shop');
+        updatePlayerNameDisplay();
     }
 }
 
@@ -298,23 +364,6 @@ function handleFileLoad(event) {
         }
     };
     reader.readAsText(file);
-}
-
-function handleSaveToFile() {
-    try {
-        const gameStateString = JSON.stringify(gameState, null, 2);
-        const blob = new Blob([gameStateString], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `idle-game-save-${Date.now()}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('Game Saved to File!');
-    } catch (error) {
-        console.error("Failed to save game:", error);
-        showToast('Error: Could not save game.');
-    }
 }
 
 /**

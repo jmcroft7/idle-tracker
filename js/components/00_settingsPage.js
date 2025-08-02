@@ -1,18 +1,26 @@
-// idle-tracker/js/components/6_settingsPage.js
-
 import { gameState } from '../state.js';
 import { BACKGROUND_OPTIONS } from '../data.js';
 
 export function buildSettingsPage() {
     const { settings } = gameState;
     
-    let optionsHtml = Object.entries(BACKGROUND_OPTIONS).map(([name, url]) => 
+    let backgroundOptionsHtml = Object.entries(BACKGROUND_OPTIONS).map(([name, url]) => 
         `<option value="${url}" ${settings.backgroundImage === url ? 'selected' : ''}>${name}</option>`
     ).join('');
 
     return `
         <div class="settings-container">
             <h2 class="page-header">Settings</h2>
+            <div class="settings-section">
+                <h3 class="settings-header">Player Settings</h3>
+                <div class="form-group">
+                    <label for="player-name-input">Player Name</label>
+                    <div class="form-group-inline">
+                        <input type="text" id="player-name-input" class="styled-select" value="${settings.playerName}">
+                        <button id="save-player-name-btn" class="button button--secondary">Save</button>
+                    </div>
+                </div>
+            </div>
             <div class="settings-section">
                 <h3 class="settings-header">Game Settings</h3>
                  <div class="form-group form-group--toggle">
@@ -34,7 +42,7 @@ export function buildSettingsPage() {
                 </div>
                 <div class="form-group">
                     <label for="background-image-select">Background Image</label>
-                    <select id="background-image-select" class="styled-select">${optionsHtml}</select>
+                    <select id="background-image-select" class="styled-select">${backgroundOptionsHtml}</select>
                     <div class="background-preview ${settings.backgroundImage !== 'none' ? '' : 'hidden'}">
                         <img id="background-preview-img" src="${settings.backgroundImage !== 'none' ? settings.backgroundImage : ''}" alt="Background preview">
                     </div>

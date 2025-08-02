@@ -1,0 +1,89 @@
+/* Core Layout & App Container */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    /* Background Image Styles */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-color 0.3s;
+}
+
+/* Styles for when a background image is active */
+body.body-has-background {
+    background-color: rgba(var(--bg-primary-rgb), 0.7);
+}
+body.body-has-background .styled-select {
+    background-color: rgba(var(--bg-tertiary-rgb, var(--bg-primary-rgb)), 0.8);
+}
+
+.app-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* Toast Notification */
+#toast-notification {
+    position: fixed;
+    z-index: 1000;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 15px 25px;
+    border-radius: 8px;
+    border: 1px solid var(--accent-color);
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+.toast-icon {
+    margin-right: 10px;
+}
+
+#toast-notification.show {
+    opacity: 1;
+}
+
+.toast-position--bottom-center { bottom: 20px; left: 50%; transform: translate(-50%, 120%); }
+.toast-position--bottom-center.show { transform: translate(-50%, 0); }
+
+.toast-position--bottom-right { bottom: 20px; right: 20px; transform: translateY(120%); }
+.toast-position--bottom-right.show { transform: translateY(0); }
+
+.toast-position--bottom-left { bottom: 20px; left: 270px; transform: translateY(120%); }
+.toast-position--bottom-left.show { transform: translateY(0); }

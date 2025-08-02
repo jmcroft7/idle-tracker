@@ -1,0 +1,21 @@
+/* Info Bar */
+.info-bar {
+    background-color: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s;
+}
+
+.info-bar__item {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.info-bar__value {
+    font-weight: bold;
+    color: var(--accent-color);
+}

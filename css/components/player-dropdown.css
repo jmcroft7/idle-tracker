@@ -1,0 +1,61 @@
+/* Main Header */
+.main-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 0 20px 0;
+}
+
+.player-dropdown {
+    position: relative;
+}
+
+.player-dropdown__name {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.player-dropdown__name span:last-child {
+    font-size: 0.8em;
+}
+
+.player-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    z-index: 100;
+    width: 220px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+}
+.player-dropdown-menu.show {
+    display: flex;
+}
+.player-dropdown-menu button {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    background-color: transparent;
+    color: var(--text-primary);
+}
+.player-dropdown-menu button:hover {
+    background-color: var(--bg-tertiary);
+}
+.player-dropdown-menu .player-name-display {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-align: center;
+}

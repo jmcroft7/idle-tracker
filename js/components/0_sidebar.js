@@ -101,6 +101,7 @@ export function buildSidebar() {
                 <li><a href="#" class="nav-item" data-page="stats"><span>📊</span>Stats</a></li>
                 <li><a href="#" class="nav-item" data-page="skillManager"><span>✨</span>Manage Skills</a></li>
                 <li><a href="#" class="nav-item" data-page="skillGroupManager"><span>📁</span>Manage Groups</a></li>
+                <li><a href="#" class="nav-item" data-page="manualEntry"><span>📝</span>Manual Entry</a></li>
                 <li><a href="#" class="nav-item" data-page="settings"><span>⚙️</span>Settings</a></li>
                 <li><a href="#" class="nav-item" data-page="about"><span>ℹ️</span>About</a></li>
             </ul>

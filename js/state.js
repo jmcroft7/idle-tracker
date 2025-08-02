@@ -37,13 +37,14 @@ function generateDefaultState() {
         skillGroups,
         coins: 0,
         inventory: [],
-        purchasedTitles: [],
-        equippedTitle: null,
+        purchasedTitles: ['novice', 'none'],
+        equippedTitle: 'novice',
         unlockedSkills: [
             'woodcutting', 'reading', 'writing', 'gaming', 'coding', 
             'fitness', 'cooking', 'mycology', 'fishing', 'mining'
         ],
         settings: {
+            playerName: 'Player',
             useDarkMode: true,
             backgroundImage: 'none',
             notificationPosition: 'bottom-center',

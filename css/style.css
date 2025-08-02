@@ -218,11 +218,88 @@ body.body-has-background .styled-select {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Main Header */
+.main-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 0 20px 0;
+}
+
+.player-dropdown {
+    position: relative;
+}
+
+.player-dropdown__name {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-display {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.player-display__name {
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.player-display__title {
+    font-size: 0.8em;
+    font-weight: normal;
+    color: var(--text-secondary);
+}
+
+
+.player-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    z-index: 100;
+    width: 220px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+}
+.player-dropdown-menu.show {
+    display: flex;
+}
+.player-dropdown-menu button {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    background-color: transparent;
+    color: var(--text-primary);
+}
+.player-dropdown-menu button:hover {
+    background-color: var(--bg-tertiary);
+}
+.player-dropdown-menu .player-name-display {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+
+
 /* Action Cards (Skills Page) */
 .info-bar {
     background-color: var(--bg-secondary);
     display: flex;
-    justify-content: space-between;
     align-items: center;
     padding: 15px;
     border-radius: 8px;
@@ -232,6 +309,7 @@ body.body-has-background .styled-select {
 }
 
 .info-bar__item {
+    flex-grow: 1;
     font-weight: 500;
 }
 
@@ -574,8 +652,7 @@ body.body-has-background .styled-select {
 }
 .skill-manager-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px
- 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     border-color: var(--text-secondary);
 }
 .skill-manager-card__icon {
@@ -759,11 +836,19 @@ body.body-has-background .styled-select {
     justify-content: space-between;
     align-items: center;
 }
+.form-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
 .form-group label {
     display: block;
     font-weight: 600;
     margin-bottom: 8px;
+}
+.form-group small {
+    display: block;
 }
 .form-group--toggle > label {
     margin-bottom: 0;
@@ -904,4 +989,9 @@ input:checked + .toggle-slider:before {
 }
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-secondary);
+}
+
+.player-name-display {
+    font-weight: bold;
+    color: var(--accent-color);
 }

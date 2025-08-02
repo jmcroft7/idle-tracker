@@ -1,0 +1,82 @@
+/* Settings Page */
+.settings-container, .about-container {
+    max-width: 800px;
+    margin: 0 auto; /* Centers the container */
+}
+
+.settings-section {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    transition: background-color 0.3s;
+}
+
+.settings-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+.form-group:last-child {
+    margin-bottom: 0;
+}
+.form-group--toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.form-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.form-group small {
+    display: block;
+}
+.form-group--toggle > label {
+    margin-bottom: 0;
+}
+
+/* Generic Styled Select (Dropdown) */
+.styled-select {
+    width: 100%;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.background-preview {
+    margin-top: 15px;
+}
+.background-preview img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+
+.button-group {
+    display: flex;
+    gap: 15px;
+}

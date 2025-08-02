@@ -25,6 +25,8 @@ export function buildShopPage() {
     const activeTabData = SHOP_DATA[selectedShopTab];
     let itemsHtml = '';
     for (const key in activeTabData.items) {
+        if (key === 'none' || key === 'novice') continue;
+        
         const item = activeTabData.items[key];
         const isPurchased = gameState.purchasedTitles.includes(key);
         const isEquipped = gameState.equippedTitle === key;

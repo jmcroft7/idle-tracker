@@ -1,16 +1,17 @@
 // idle-tracker/js/ui.js
 
 import { gameState } from './state.js';
-import { buildSidebar } from './components/0_sidebar.js';
+import { buildSidebar as buildSidebarComponent } from './components/0_sidebar.js';
 import { buildSkillPage } from './components/3_skillPage.js';
 import { buildStatsPage, setSelectedStatSkill } from './components/4_statsPage.js';
-import { buildSettingsPage } from './components/6_settingsPage.js';
-import { buildAboutPage } from './components/7_aboutPage.js';
+import { buildSettingsPage } from './components/00_settingsPage.js';
+import { buildAboutPage } from './components/00_aboutPage.js';
 import { buildSkillManagerPage } from './components/5_skillManagerPage.js';
 import { buildBankPage } from './components/2_bankPage.js';
 import { buildShopPage } from './components/1_shopPage.js';
 import { buildSkillGroupManagerPage } from './components/8_skillGroupManagerPage.js';
-import { HARD_XP_PER_HOUR, NORMAL_XP_PER_HOUR, MAX_LEVEL } from './data.js';
+import { buildManualEntryPage } from './components/9_manualEntryPage.js';
+import { HARD_XP_PER_HOUR, NORMAL_XP_PER_HOUR, MAX_LEVEL, SHOP_DATA } from './data.js';
 
 const mainContent = document.getElementById('main-content');
 const themeStylesheet = document.getElementById('theme-stylesheet');
@@ -19,7 +20,17 @@ const toastMessage = document.getElementById('toast-message');
 let toastTimeout;
 
 // Re-export functions that are needed by other modules
-export { buildSidebar, setSelectedStatSkill };
+export { setSelectedStatSkill };
+
+/**
+ * Builds the entire sidebar.
+ */
+export function buildSidebar() {
+    buildSidebarComponent();
+    // Also update the coin display any time the sidebar is rebuilt
+    const walletDisplay = document.getElementById('sidebar-wallet-coins');
+    if (walletDisplay) walletDisplay.textContent = gameState.coins.toLocaleString();
+}
 
 /**
  * Applies the current theme and background image settings.
@@ -72,6 +83,7 @@ const pageTemplates = {
     about: buildAboutPage,
     skillManager: buildSkillManagerPage,
     skillGroupManager: buildSkillGroupManagerPage,
+    manualEntry: buildManualEntryPage,
     // Default case for skills
     skill: buildSkillPage,
 };
@@ -81,10 +93,48 @@ const pageTemplates = {
  * @param {string} pageName The name of the page to build.
  */
 export function buildPage(pageName) {
-    mainContent.innerHTML = '';
+    // Build the player name display first
+    let contentHtml = buildPlayerNameDisplay();
     const pageBuilder = pageTemplates[pageName] || pageTemplates.skill;
-    mainContent.innerHTML = pageBuilder(pageName);
+    contentHtml += pageBuilder(pageName);
+    mainContent.innerHTML = contentHtml;
     updateActiveNav(pageName);
+}
+
+/**
+ * Builds the HTML for the player name display in the main header.
+ * @returns {string} The HTML string for the player name display.
+ */
+function buildPlayerNameDisplay() {
+    const { playerName } = gameState.settings;
+    const { purchasedTitles, equippedTitle } = gameState;
+
+    const titleName = (equippedTitle && equippedTitle !== 'none') ? SHOP_DATA.titles.items[equippedTitle].name : '';
+
+    let titleOptionsHtml = purchasedTitles.map(titleKey => {
+        const title = SHOP_DATA.titles.items[titleKey];
+        if (!title) return '';
+        return `<option value="${titleKey}" ${equippedTitle === titleKey ? 'selected' : ''}>${title.name}</option>`;
+    }).join('');
+
+    return `
+        <div class="main-header">
+            <div class="player-dropdown">
+                <div class="player-dropdown__name" id="player-dropdown-toggle">
+                    <div class="player-display">
+                        <span class="player-display__name" id="player-name-main">${playerName}</span>
+                        <span class="player-display__title" id="player-title-main">${titleName}</span>
+                    </div>
+                    <span>▼</span>
+                </div>
+                <div class="player-dropdown-menu" id="player-dropdown-menu">
+                    <div class="player-name-display">${playerName}</div>
+                    <select id="title-select" class="styled-select">${titleOptionsHtml}</select>
+                    <button id="reset-game-btn" class="button">Reset Game</button>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 /**
@@ -122,6 +172,25 @@ export function updateSidebarLevel(skillName) {
     if (levelElement) {
         levelElement.textContent = `(${skill.level}/${MAX_LEVEL})`;
     }
+}
+
+/**
+ * Updates just the player name in the header display.
+ */
+export function updatePlayerNameDisplay() {
+    const { playerName } = gameState.settings;
+    const { equippedTitle } = gameState;
+
+    const titleName = (equippedTitle && equippedTitle !== 'none') ? SHOP_DATA.titles.items[equippedTitle].name : '';
+    
+    const mainNameEl = document.getElementById('player-name-main');
+    if (mainNameEl) mainNameEl.textContent = playerName;
+
+    const mainTitleEl = document.getElementById('player-title-main');
+    if (mainTitleEl) mainTitleEl.textContent = titleName;
+    
+    const dropdownDisplay = document.querySelector('.player-dropdown-menu .player-name-display');
+    if (dropdownDisplay) dropdownDisplay.textContent = playerName;
 }
 
 /**

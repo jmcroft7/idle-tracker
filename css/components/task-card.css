@@ -1,0 +1,61 @@
+/* Task Card Styles */
+.task-card {
+    /* Inherits from .card */
+    gap: 15px;
+}
+
+.task-card.completed {
+    opacity: 0.65;
+}
+
+.task-card.completed .task-card__name {
+    text-decoration: line-through;
+}
+
+.task-card__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.task-card__name {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 0;
+}
+
+.task-card__description {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin: 0;
+    flex-grow: 1; /* Allows description to take up available space */
+}
+
+.task-card__rewards {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    flex-wrap: wrap;
+}
+
+.task-card__reward {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.task-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    margin-top: auto; /* Pushes footer to the bottom */
+}
+
+.task-card__footer .button {
+    padding: 8px 16px;
+    min-width: 110px;
+    text-align: center;
+}

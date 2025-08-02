@@ -1,0 +1,76 @@
+/* Statistics Page Styles */
+.stats-skill-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stats-skill-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 1em;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.stats-skill-button:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.stats-skill-button.active {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--button-text-primary);
+}
+
+.stats-container {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0 20px;
+    max-width: 700px;
+    transition: background-color 0.3s;
+}
+
+.stats-header {
+    padding: 20px 0 10px 0;
+    margin: 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.5em;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.no-stats {
+    padding: 16px 0;
+    color: var(--text-secondary);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: 500;
+}
+
+.stat-value {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--accent-color);
+}

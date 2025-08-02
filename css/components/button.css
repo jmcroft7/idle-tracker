@@ -1,0 +1,30 @@
+/* Buttons & Forms */
+.button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.button--primary {
+    background-color: var(--accent-color);
+    color: var(--button-text-primary);
+}
+
+.button--primary:hover {
+    opacity: 0.9;
+}
+
+.button--secondary {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.button--secondary:hover {
+    background-color: var(--border-color);
+}
